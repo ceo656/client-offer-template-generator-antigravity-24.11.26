@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>კომერციული შეთავაზების გენერატორი | გამომცემლობა „დიოგენე“</title>
+  
+  <!-- Google Fonts: Noto Sans Georgian & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Application Styles & Print CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar (Hidden in Print) -->
+  <header id="top-navbar" class="no-print bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg overflow-hidden border border-slate-200 bg-white flex items-center justify-center p-1 shadow-2xs">
+          <img id="nav-logo-preview" src="./logo.png" onerror="this.onerror=null; this.src='./logo.png'" alt="დიოგენე" class="max-h-full max-w-full object-contain">
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">დიოგენე</h1>
+            <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold brand-bg-light brand-text-primary border brand-border-light">One-Pager</span>
+          </div>
+          <p class="text-[11px] text-slate-500">კომერციული შეთავაზების გენერატორი</p>
+        </div>
+      </div>
+
+      <!-- Center Auto-Save Status -->
+      <div class="hidden md:flex items-center space-x-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+        <span id="save-indicator-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="save-status-text">ავტომატურად შენახულია</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2 sm:space-x-2.5">
+        <!-- View Switcher for Small Screens -->
+        <div class="flex lg:hidden bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <button id="btn-toggle-editor" class="px-2.5 py-1 text-xs font-medium rounded-md bg-white shadow-xs text-slate-800">რედაქტორი</button>
+          <button id="btn-toggle-preview" class="px-2.5 py-1 text-xs font-medium rounded-md text-slate-600 hover:text-slate-900">გადახედვა</button>
+        </div>
+
+        <!-- Export/Import JSON (Bonus Productivity Tools) -->
+        <div class="hidden sm:flex items-center space-x-1">
+          <button id="btn-export-json" title="შეთავაზების შენახვა JSON ფაილად" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition" aria-label="Export JSON">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          </button>
+          <label title="შეთავაზების ჩატვირთვა JSON ფაილიდან" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition cursor-pointer" aria-label="Import JSON">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <input type="file" id="input-import-json" accept=".json" class="hidden">
+          </label>
+        </div>
+
+        <!-- Reset Button -->
+        <button id="btn-reset" title="საწყისი შაბლონის აღდგენა" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg shadow-2xs transition">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span class="hidden sm:inline">საწყისზე დაბრუნება</span>
+        </button>
+
+        <!-- Print / PDF Primary Button -->
+        <button id="btn-print" class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white brand-bg-primary hover:opacity-95 rounded-lg shadow-2xs transition active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          <span>PDF / ბეჭდვა</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workstation Layout (Split Screen) -->
+  <main id="app-root" class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT PANEL: Editor & Form Controls -->
+    <aside id="editor-panel" class="no-print w-full lg:w-1/2 xl:w-[48%] bg-white border-r border-slate-200 flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+      
+      <!-- Editor Navigation Tabs -->
+      <div class="border-b border-slate-200 bg-slate-50 px-3 pt-2 flex space-x-1 overflow-x-auto text-sm select-none">
+        <button class="tab-btn active px-3 py-2 rounded-t-lg text-xs sm:text-xs font-medium border-b-2 border-transparent transition flex items-center gap-1.5" data-tab="tab-branding">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4 5 5 0 015-5h4a5 5 0 015 5 4 4 0 01-4 4H7zm0 0l4-4m-4 4l-4-4m18-6a5 5 0 11-10 0 5 5 0 0110 0z"></path>
+          </svg>
+          <span>ბრენდინგი</span>
+        </button>
+
+        <button class="tab-btn px-3 py-2 rounded-t-lg text-xs sm:text-xs font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition flex items-center gap-1.5" data-tab="tab-details">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>რეკვიზიტები</span>
+        </button>
+
+        <button class="tab-btn px-3 py-2 rounded-t-lg text-xs sm:text-xs font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition flex items-center gap-1.5" data-tab="tab-program">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          <span>პროგრამა</span>
+        </button>
+
+        <button class="tab-btn px-3 py-2 rounded-t-lg text-xs sm:text-xs font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition flex items-center gap-1.5" data-tab="tab-calculator">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+          <span>კალკულატორი</span>
+        </button>
+
+        <button class="tab-btn px-3 py-2 rounded-t-lg text-xs sm:text-xs font-medium text-slate-600 hover:text-slate-900 border-b-2 border-transparent transition flex items-center gap-1.5" data-tab="tab-terms">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          <span>პირობები</span>
+        </button>
+      </div>
+
+      <!-- Tab Content Area (Scrollable) -->
+      <div class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+        
+        <!-- ================= TAB 1: BRANDING & VISUAL ================= -->
+        <section id="tab-branding" class="tab-content space-y-5">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">კომპანიის ლოგო და ვიზუალური სტილი</h2>
+            <p class="text-xs text-slate-500 mt-0.5">სისტემა ავტომატურად იყენებს `./logo.png`-ს. შეგიძლიათ ატვირთოთ ახალი ან აირჩიოთ ბრენდის ფერები.</p>
+          </div>
+
+          <!-- Logo Upload Box -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">ლოგოს მართვა</label>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+              <div class="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 bg-white flex items-center justify-center p-2 relative group overflow-hidden shadow-2xs">
+                <img id="form-logo-preview" src="./logo.png" onerror="this.onerror=null; this.src='./logo.png'" alt="Logo Preview" class="max-h-full max-w-full object-contain">
+              </div>
+              <div class="flex-1 space-y-2 text-center sm:text-left">
+                <div class="flex flex-wrap gap-2">
+                  <label class="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-2xs transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span>ახალი ლოგოს ატვირთვა</span>
+                    <input type="file" id="input-logo-file" accept="image/*" class="hidden">
+                  </label>
+                  <button id="btn-reset-logo" type="button" class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg transition">
+                    საწყისზე დაბრუნება
+                  </button>
+                </div>
+                <p class="text-[11px] text-slate-400">რეკომენდებულია გამჭვირვალე PNG ან თეთრ ფონზე JPEG (მაქს. 2.5MB)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Color Palettes -->
+          <div class="space-y-3">
+            <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">ბრენდის ფერთა პალიტრები</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="palette-presets-container">
+              <!-- Preset 1: Diogene Classic Navy -->
+              <button type="button" class="palette-btn active flex items-center gap-2 p-2 rounded-lg border-2 border-blue-600 bg-blue-50/50 hover:bg-blue-50 transition text-left" data-primary="#1e3a8a" data-light="#eff6ff" data-border="#bfdbfe" data-text="#172554">
+                <span class="w-5 h-5 rounded-full bg-[#1e3a8a] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">დიოგენეს ლურჯი</div>
+                  <div class="text-[10px] text-slate-500">კლასიკური #1e3a8a</div>
+                </div>
+              </button>
+
+              <!-- Preset 2: Burgundy / Bordeaux -->
+              <button type="button" class="palette-btn flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition text-left" data-primary="#831843" data-light="#fdf2f8" data-border="#fbcfe8" data-text="#701a75">
+                <span class="w-5 h-5 rounded-full bg-[#831843] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">ბორდო</div>
+                  <div class="text-[10px] text-slate-500">ელეგანტური #831843</div>
+                </div>
+              </button>
+
+              <!-- Preset 3: Emerald Forest -->
+              <button type="button" class="palette-btn flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition text-left" data-primary="#065f46" data-light="#ecfdf5" data-border="#a7f3d0" data-text="#064e3b">
+                <span class="w-5 h-5 rounded-full bg-[#065f46] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">ზურმუხტისფერი</div>
+                  <div class="text-[10px] text-slate-500">აკადემიური #065f46</div>
+                </div>
+              </button>
+
+              <!-- Preset 4: Royal Indigo -->
+              <button type="button" class="palette-btn flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition text-left" data-primary="#3730a3" data-light="#eef2ff" data-border="#c7d2fe" data-text="#312e81">
+                <span class="w-5 h-5 rounded-full bg-[#3730a3] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">სამეფო ინდიგო</div>
+                  <div class="text-[10px] text-slate-500">პრემიუმ #3730a3</div>
+                </div>
+              </button>
+
+              <!-- Preset 5: Modern Slate / Charcoal -->
+              <button type="button" class="palette-btn flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition text-left" data-primary="#1e293b" data-light="#f8fafc" data-border="#cbd5e1" data-text="#0f172a">
+                <span class="w-5 h-5 rounded-full bg-[#1e293b] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">გრაფიტი</div>
+                  <div class="text-[10px] text-slate-500">მინიმალისტური #1e293b</div>
+                </div>
+              </button>
+
+              <!-- Preset 6: Warm Amber / Terracotta -->
+              <button type="button" class="palette-btn flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition text-left" data-primary="#9a3412" data-light="#fff7ed" data-border="#fed7aa" data-text="#7c2d12">
+                <span class="w-5 h-5 rounded-full bg-[#9a3412] shadow-inner flex-shrink-0"></span>
+                <div class="truncate">
+                  <div class="text-xs font-bold text-slate-800">ქარვისფერი</div>
+                  <div class="text-[10px] text-slate-500">თბილი #9a3412</div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Custom Color Picker -->
+            <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+              <span class="text-xs font-medium text-slate-700">საკუთარი ფერის არჩევა (Custom Color):</span>
+              <div class="flex items-center gap-2">
+                <input type="color" id="custom-color-picker" value="#1e3a8a" class="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0">
+                <input type="text" id="custom-color-hex" value="#1e3a8a" class="w-20 px-2 py-1 text-xs border border-slate-300 rounded font-mono uppercase text-center">
+              </div>
+            </div>
+          </div>
+
+          <!-- Company Details Block -->
+          <div class="space-y-3 pt-3 border-t border-slate-200">
+            <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">გამომცემლობა „დიოგენეს“ რეკვიზიტები</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">კომპანიის დასახელება</label>
+                <input type="text" id="inp-company-name" class="form-input text-xs" value="გამომცემლობა „დიოგენე“">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ქვეგანყოფილება / დეპარტამენტი</label>
+                <input type="text" id="inp-company-subname" class="form-input text-xs" value="საგანმანათლებლო და კულტურული პროექტები">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">საიდენტიფიკაციო კოდი (ს/კ)</label>
+                <input type="text" id="inp-company-id" class="form-input text-xs" value="204918234">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">იურიდიული მისამართი</label>
+                <input type="text" id="inp-company-address" class="form-input text-xs" value="თბილისი, ა. აფაქიძის ქ. 9">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">საკონტაქტო ელ.ფოსტა</label>
+                <input type="text" id="inp-company-email" class="form-input text-xs" value="tours@diogene.ge">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ტელეფონი</label>
+                <input type="text" id="inp-company-phone" class="form-input text-xs" value="+995 32 2 21 33 21">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 2: DETAILS & CLIENT ================= -->
+        <section id="tab-details" class="tab-content hidden space-y-5">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">დოკუმენტისა და კლიენტის რეკვიზიტები</h2>
+            <p class="text-xs text-slate-500 mt-0.5">შეიყვანეთ შეთავაზების საიდენტიფიკაციო ნომერი, ვადები და დამკვეთის ინფორმაცია.</p>
+          </div>
+
+          <!-- Offer Metadata -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+            <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">შეთავაზების პარამეტრები</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">შეთავაზების №</label>
+                <input type="text" id="inp-offer-number" class="form-input text-xs font-medium" value="DG-2026/048">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">შექმნის თარიღი</label>
+                <input type="date" id="inp-offer-date" class="form-input text-xs" value="2026-11-24">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">მოქმედების ვადა</label>
+                <input type="date" id="inp-offer-valid-until" class="form-input text-xs" value="2026-12-15">
+              </div>
+            </div>
+          </div>
+
+          <!-- Client Details -->
+          <div class="space-y-3">
+            <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">დამკვეთი ორგანიზაცია (კლიენტი)</h3>
+            <div class="grid grid-cols-1 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ორგანიზაციის დასახელება *</label>
+                <input type="text" id="inp-client-name" class="form-input text-xs font-semibold" value="შპს „საქართველოს ევროპული სკოლა“" placeholder="მაგ. სსიპ თბილისის №51 საჯარო სკოლა">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">საკონტაქტო პირი / თანამდებობა *</label>
+                  <input type="text" id="inp-client-contact" class="form-input text-xs" value="ქ-ნი ნინო ბერიძე — აკადემიური დირექტორი" placeholder="სახელი, გვარი, პოზიცია">
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">ორგანიზაციის ს/კ</label>
+                  <input type="text" id="inp-client-id" class="form-input text-xs" value="204123456" placeholder="საიდენტიფიკაციო კოდი">
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">ტელეფონი</label>
+                  <input type="text" id="inp-client-phone" class="form-input text-xs" value="+995 599 12 34 56">
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">ელ.ფოსტა</label>
+                  <input type="email" id="inp-client-email" class="form-input text-xs" value="n.beridze@europeanschool.ge">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">დამკვეთის მისამართი (არასავალდებულო)</label>
+                <input type="text" id="inp-client-address" class="form-input text-xs" value="ქ. თბილისი, ი. ჭავჭავაძის გამზ. 84">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 3: PROGRAM SPECIFICS ================= -->
+        <section id="tab-program" class="tab-content hidden space-y-5">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">საგანმანათლებლო პროგრამის აღწერა</h2>
+            <p class="text-xs text-slate-500 mt-0.5">ტური „დიდაქტა ჰანოვერი“ (Didacta Hannover) და პროგრამის ძირითადი უპირატესობები.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">პროგრამის სახელწოდება *</label>
+              <input type="text" id="inp-prog-title" class="form-input text-xs font-bold" value="საგანმანათლებლო ტური — „დიდაქტა ჰანოვერი“ (Didacta Hannover)">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ქვესათაური / ფორმატი</label>
+                <input type="text" id="inp-prog-subtitle" class="form-input text-xs" value="მსოფლიოს წამყვანი საგანმანათლებლო გამოფენა და ვორქშოფები">
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ლოკაცია და პერიოდი</label>
+                <input type="text" id="inp-prog-location" class="form-input text-xs" value="ჰანოვერი, გერმანია | 2026 წლის გაზაფხული">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">პროგრამის მოკლე აღწერა *</label>
+              <textarea id="inp-prog-desc" rows="4" class="form-textarea text-xs leading-relaxed">შერჩეული საგანმანათლებლო პროგრამა მასწავლებლებისა და საგანმანათლებლო სფეროს წარმომადგენლებისთვის, რომლებიც მოწადინებული არიან მიიღონ უახლესი ინფორმაცია თანამედროვე სასწავლო მასალებზე, მეთოდოლოგიებსა და ტექნოლოგიებზე და გაუზიარონ ეს გამოცდილება საკუთარ აუდიტორიას.</textarea>
+              <p class="text-[11px] text-slate-400 mt-1">ტექსტი გამოჩნდება შეთავაზების საინფორმაციო ბანერში.</p>
+            </div>
+
+            <!-- Program Highlights Chips/Badges -->
+            <div class="space-y-2 pt-2 border-t border-slate-200">
+              <div class="flex items-center justify-between">
+                <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">საკვანძო უპირატესობები / კომპონენტები</label>
+                <button type="button" id="btn-add-highlight" class="text-xs text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  <span>პუნქტის დამატება</span>
+                </button>
+              </div>
+              <div id="highlights-container" class="space-y-2">
+                <!-- Dynamically populated highlight inputs -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 4: CALCULATOR & ITEMS ================= -->
+        <section id="tab-calculator" class="tab-content hidden space-y-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-900">სერვისები და ფასების კალკულატორი</h2>
+              <p class="text-xs text-slate-500 mt-0.5">დაამატეთ ან შეცვალეთ პოზიციები. ჯამი ითვლება ავტომატურად.</p>
+            </div>
+            <!-- Currency selector -->
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+              <span class="text-[11px] text-slate-500 px-1 font-medium">ვალუტა:</span>
+              <button type="button" class="currency-btn active px-2 py-0.5 text-xs font-bold rounded bg-white shadow-2xs text-slate-800" data-currency="€">€ (EUR)</button>
+              <button type="button" class="currency-btn px-2 py-0.5 text-xs font-bold rounded text-slate-600 hover:text-slate-900" data-currency="₾">₾ (GEL)</button>
+              <button type="button" class="currency-btn px-2 py-0.5 text-xs font-bold rounded text-slate-600 hover:text-slate-900" data-currency="$">$ (USD)</button>
+            </div>
+          </div>
+
+          <!-- Items Dynamic List -->
+          <div id="items-list-container" class="space-y-3">
+            <!-- Dynamically populated item cards -->
+          </div>
+
+          <!-- Add Item Button -->
+          <button type="button" id="btn-add-item" class="w-full py-2.5 px-4 border-2 border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100/80 rounded-xl text-xs font-semibold text-slate-700 transition flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>ახალი პოზიციის დამატება</span>
+          </button>
+
+          <!-- Discount & Tax Controls -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+            <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">ფასდაკლება და გადასახადები</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1">ფასდაკლების ტიპი</label>
+                <select id="inp-discount-type" class="form-select text-xs">
+                  <option value="percentage">პროცენტული (%)</option>
+                  <option value="fixed">ფიქსირებული თანხა</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-600 mb-1" id="label-discount-value">ფასდაკლება (%)</label>
+                <input type="number" id="inp-discount-value" class="form-input text-xs font-semibold" value="5" min="0" step="any">
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="inp-tax-inclusive" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300">
+                <span class="text-xs text-slate-700 font-medium">ფასში გათვალისწინებულია დღგ</span>
+              </label>
+              <input type="text" id="inp-tax-note" class="form-input text-xs w-1/2" value="ფასები მოიცავს კანონით გათვალისწინებულ ყველა გადასახადს">
+            </div>
+          </div>
+
+          <!-- Quick Calculation Summary -->
+          <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex items-center justify-between text-xs">
+            <div class="space-y-1">
+              <div class="text-slate-500">ქვეჯამი: <span id="summary-subtotal" class="font-bold text-slate-800">0.00 €</span></div>
+              <div class="text-slate-500">ფასდაკლება: <span id="summary-discount" class="font-medium text-emerald-600">0.00 €</span></div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-500 uppercase tracking-wider font-semibold">სულ გადასახდელი</div>
+              <div id="summary-total" class="text-lg sm:text-xl font-extrabold text-blue-900">0.00 €</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB 5: TERMS & SIGNATURE ================= -->
+        <section id="tab-terms" class="tab-content hidden space-y-5">
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">გადახდის პირობები და საბანკო რეკვიზიტები</h2>
+            <p class="text-xs text-slate-500 mt-0.5">დამატებითი საორგანიზაციო წესები, ანგარიშსწორების გრაფიკი და ხელმომწერები.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">გადახდის პირობები და გრაფიკი</label>
+              <textarea id="inp-payment-schedule" rows="3" class="form-textarea text-xs leading-relaxed">• წინასწარი ანგარიშსწორება: 40% ხელშეკრულების გაფორმებისას;
+• დარჩენილი 60%: გამგზავრებამდე არაუგვიანეს 15 კალენდარული დღით ადრე.</textarea>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">საბანკო რეკვიზიტები (ანგარიშსწორებისთვის)</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">მომსახურე ბანკი</label>
+                  <input type="text" id="inp-bank-name" class="form-input text-xs" value="სს „თიბისი ბანკი“">
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">ანგარიშის მფლობელი</label>
+                  <input type="text" id="inp-bank-beneficiary" class="form-input text-xs" value="შპს „გამომცემლობა დიოგენე“">
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs text-slate-600 mb-1">ანგარიშის ნომერი (IBAN)</label>
+                  <input type="text" id="inp-bank-iban" class="form-input text-xs font-mono font-medium" value="GE78TB7000000123456789">
+                </div>
+              </div>
+            </div>
+
+            <!-- Signer Details -->
+            <div class="space-y-3">
+              <h3 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">უფლებამოსილი წარმომადგენელი (დიოგენე)</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">სახელი და გვარი</label>
+                  <input type="text" id="inp-signer-name" class="form-input text-xs font-medium" value="თინათინ ბერიაშვილი">
+                </div>
+                <div>
+                  <label class="block text-xs text-slate-600 mb-1">თანამდებობა</label>
+                  <input type="text" id="inp-signer-position" class="form-input text-xs" value="საგანმანათლებლო პროექტების დირექტორი">
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer note -->
+            <div>
+              <label class="block text-xs text-slate-600 mb-1">ქვედა კოლონტიტულის ტექსტი (Footer)</label>
+              <input type="text" id="inp-footer-text" class="form-input text-xs" value="მადლობას გიხდით დაინტერესებისთვის! | გამომცემლობა „დიოგენე“ | www.diogene.ge">
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: Live A4 Preview & Zoom Viewport -->
+    <section id="preview-panel" class="w-full lg:w-1/2 xl:w-[52%] flex flex-col h-[calc(100vh-64px)] bg-slate-200">
+      
+      <!-- Preview Header Controls (Hidden in Print) -->
+      <div id="preview-header-bar" class="no-print bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 py-2 flex items-center justify-between shadow-2xs select-none z-10">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            A4 Live Preview
+          </span>
+          <span class="hidden sm:inline-block text-[11px] text-slate-400">|</span>
+          <!-- Single page fit status -->
+          <span id="page-fit-indicator" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold fit-badge-ok">
+            ✓ ზუსტად 1 A4 გვერდი
+          </span>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="flex items-center space-x-1">
+          <button id="zoom-out" class="p-1 rounded hover:bg-slate-100 text-slate-600 text-xs font-bold" title="დაპატარავება">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+          </button>
+          <span id="zoom-level-text" class="text-xs font-mono text-slate-700 w-12 text-center">85%</span>
+          <button id="zoom-in" class="p-1 rounded hover:bg-slate-100 text-slate-600 text-xs font-bold" title="გადიდება">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          </button>
+          <button id="zoom-fit" class="ml-1 px-2 py-0.5 rounded text-xs text-slate-600 hover:bg-slate-100 border border-slate-200 font-medium" title="ეკრანზე მორგება">
+            მორგება
+          </button>
+        </div>
+      </div>
+
+      <!-- Viewport with Interactive A4 Container -->
+      <div class="preview-viewport flex-1 overflow-auto">
+        <div id="zoom-wrapper" class="transition-transform duration-150 origin-top">
+          
+          <!-- ================= A4 DOCUMENT CONTAINER ================= -->
+          <article id="a4-page" class="a4-container p-6 sm:p-7 text-slate-800 text-[11.5px] leading-relaxed relative flex flex-col justify-between">
+            
+            <!-- TOP ACCENT LINE (Customized by Theme) -->
+            <div class="absolute top-0 left-0 right-0 h-1.5 brand-bg-primary"></div>
+
+            <div class="space-y-3.5">
+              <!-- 1. HEADER SECTION: Logo & Document Identifiers -->
+              <header class="flex items-start justify-between border-b border-slate-200 pb-3">
+                <!-- Company Identity -->
+                <div class="flex items-center space-x-3.5">
+                  <div class="w-14 h-14 rounded-lg bg-white p-1 flex items-center justify-center flex-shrink-0 border border-slate-100 shadow-2xs">
+                    <img id="view-company-logo" src="./logo.png" onerror="this.onerror=null; this.src='./logo.png'" alt="დიოგენე ლოგო" class="max-h-full max-w-full object-contain">
+                  </div>
+                  <div>
+                    <h1 id="view-company-name" class="font-extrabold text-slate-900 text-base tracking-tight leading-tight">გამომცემლობა „დიოგენე“</h1>
+                    <p id="view-company-subname" class="text-[10px] text-slate-500 font-medium">საგანმანათლებლო და კულტურული პროექტები</p>
+                    <div class="text-[9.5px] text-slate-400 mt-0.5 flex items-center gap-2">
+                      <span>ს/კ: <span id="view-company-id">204918234</span></span>
+                      <span>•</span>
+                      <span id="view-company-email">tours@diogene.ge</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Document Badges -->
+                <div class="text-right flex flex-col items-end">
+                  <div class="inline-block px-2.5 py-1 rounded-md brand-bg-light border brand-border-light text-[11px] font-bold brand-text-primary uppercase tracking-wide mb-1.5 shadow-2xs">
+                    კომერციული შეთავაზება
+                  </div>
+                  <div class="text-[10.5px] space-y-0.5">
+                    <div class="text-slate-600">№: <span id="view-offer-number" class="font-bold text-slate-900">DG-2026/048</span></div>
+                    <div class="text-slate-500">თარიღი: <span id="view-offer-date" class="font-medium text-slate-700">24.11.2026</span></div>
+                    <div class="text-slate-500">ძალაშია: <span id="view-offer-valid-until" class="font-medium text-slate-700">15.12.2026</span></div>
+                  </div>
+                </div>
+              </header>
+
+              <!-- 2. RECIPIENT & SENDER META CARDS -->
+              <section class="grid grid-cols-2 gap-3">
+                <!-- Client Card -->
+                <div class="bg-slate-50/80 rounded-lg p-2.5 border border-slate-200/80 text-[10.5px]">
+                  <div class="text-[9.5px] font-bold brand-text-primary uppercase tracking-wider mb-1">დამკვეთი ორგანიზაცია</div>
+                  <div id="view-client-name" class="font-bold text-slate-900 text-[11.5px] leading-tight">შპს „საქართველოს ევროპული სკოლა“</div>
+                  <div id="view-client-contact" class="text-slate-700 font-medium mt-0.5">ქ-ნი ნინო ბერიძე — აკადემიური დირექტორი</div>
+                  <div class="text-slate-500 text-[9.5px] mt-1 space-x-1.5">
+                    <span id="view-client-phone">+995 599 12 34 56</span>
+                    <span>|</span>
+                    <span id="view-client-email">n.beridze@europeanschool.ge</span>
+                  </div>
+                </div>
+
+                <!-- Provider Meta Card -->
+                <div class="bg-slate-50/80 rounded-lg p-2.5 border border-slate-200/80 text-[10.5px]">
+                  <div class="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider mb-1">შემსრულებელი (მიმწოდებელი)</div>
+                  <div class="font-bold text-slate-900 text-[11.5px] leading-tight">შპს „გამომცემლობა დიოგენე“</div>
+                  <div class="text-slate-700 mt-0.5">მისამართი: <span id="view-company-address">თბილისი, ა. აფაქიძის ქ. 9</span></div>
+                  <div class="text-slate-500 text-[9.5px] mt-1 space-x-1.5">
+                    <span>ტელ: <span id="view-company-phone">+995 32 2 21 33 21</span></span>
+                    <span>|</span>
+                    <span>ვებ: www.diogene.ge</span>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 3. PROGRAM SPOTLIGHT CARD (Didacta Hannover) -->
+              <section class="rounded-xl border brand-border-light brand-bg-light p-3.5 space-y-2 relative overflow-hidden">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h2 id="view-prog-title" class="font-extrabold brand-text-primary text-xs sm:text-[13px] leading-tight">
+                      საგანმანათლებლო ტური — „დიდაქტა ჰანოვერი“ (Didacta Hannover)
+                    </h2>
+                    <p id="view-prog-subtitle" class="text-[10px] text-slate-600 font-medium mt-0.5">
+                      მსოფლიოს წამყვანი საგანმანათლებლო გამოფენა და ვორქშოფები
+                    </p>
+                  </div>
+                  <span id="view-prog-location" class="inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-semibold bg-white/80 border brand-border-light text-slate-700 shadow-2xs flex-shrink-0">
+                    ჰანოვერი, გერმანია | 2026 წლის გაზაფხული
+                  </span>
+                </div>
+
+                <!-- Default Program Description -->
+                <p id="view-prog-desc" class="text-[10px] text-slate-700 leading-normal">
+                  შერჩეული საგანმანათლებლო პროგრამა მასწავლებლებისა და საგანმანათლებლო სფეროს წარმომადგენლებისთვის, რომლებიც მოწადინებული არიან მიიღონ უახლესი ინფორმაცია თანამედროვე სასწავლო მასალებზე, მეთოდოლოგიებსა და ტექნოლოგიებზე და გაუზიარონ ეს გამოცდილება საკუთარ აუდიტორიას.
+                </p>
+
+                <!-- Highlights Pills -->
+                <div id="view-highlights-pills" class="flex flex-wrap gap-1.5 pt-1">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </section>
+
+              <!-- 4. SERVICES / PRODUCTS PRICING TABLE -->
+              <section class="space-y-1.5">
+                <div class="overflow-hidden rounded-lg border border-slate-200 shadow-2xs">
+                  <table class="w-full text-left border-collapse text-[10.5px]">
+                    <thead>
+                      <tr class="brand-bg-primary text-white text-[10px] font-semibold tracking-wide">
+                        <th class="py-2 px-2.5 w-7 text-center">#</th>
+                        <th class="py-2 px-3">მომსახურების / პროდუქტის დასახელება</th>
+                        <th class="py-2 px-2.5 w-16 text-center">რაოდ.</th>
+                        <th class="py-2 px-3 w-24 text-right">ერთ. ფასი</th>
+                        <th class="py-2 px-3 w-24 text-right">ჯამი</th>
+                      </tr>
+                    </thead>
+                    <tbody id="view-table-body" class="divide-y divide-slate-200/80 bg-white">
+                      <!-- Rows dynamically injected -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Calculations & Summary Box -->
+                <div class="flex items-start justify-between pt-1">
+                  <!-- Tax & Currency Note -->
+                  <div class="text-[9.5px] text-slate-500 max-w-[55%] leading-tight pt-1">
+                    <span id="view-tax-note">ფასები მოიცავს კანონით გათვალისწინებულ ყველა გადასახადს.</span>
+                    <div class="text-[9px] text-slate-400 mt-0.5">ანგარიშსწორება ხორციელდება ეროვნულ ან უცხოურ ვალუტაში შეთანხმებული კურსით.</div>
+                  </div>
+
+                  <!-- Financial Totals Block -->
+                  <div class="w-56 bg-slate-50 rounded-lg p-2 border border-slate-200 space-y-1 text-[10px]">
+                    <div class="flex justify-between text-slate-600">
+                      <span>ქვეჯამი:</span>
+                      <span id="view-subtotal" class="font-semibold text-slate-900">0.00 €</span>
+                    </div>
+                    <div id="view-discount-row" class="flex justify-between text-emerald-700 font-medium">
+                      <span>ფასდაკლება (<span id="view-discount-label">5%</span>):</span>
+                      <span id="view-discount-amount">-0.00 €</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-200 text-[12px] font-extrabold brand-text-primary">
+                      <span>სულ ჯამი:</span>
+                      <span id="view-total" class="text-sm">0.00 €</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- 5. TERMS & BANK DETAILS SECTION -->
+              <section class="grid grid-cols-2 gap-3 pt-1 border-t border-slate-200/80 text-[10px]">
+                <!-- Payment terms -->
+                <div class="space-y-1">
+                  <div class="font-bold text-slate-800 text-[10.5px]">გადახდის პირობები</div>
+                  <div id="view-payment-schedule" class="text-slate-600 leading-snug whitespace-pre-line text-[9.5px]">
+                    • წინასწარი ანგარიშსწორება: 40% ხელშეკრულების გაფორმებისას;
+                    • დარჩენილი 60%: გამგზავრებამდე არაუგვიანეს 15 კალენდარული დღით ადრე.
+                  </div>
+                </div>
+
+                <!-- Bank Info -->
+                <div class="bg-slate-50 rounded p-2 border border-slate-200/60 space-y-0.5 text-[9.5px]">
+                  <div class="font-bold text-slate-800">საბანკო რეკვიზიტები:</div>
+                  <div class="text-slate-600">ბანკი: <span id="view-bank-name" class="font-medium text-slate-800">სს „თიბისი ბანკი“</span></div>
+                  <div class="text-slate-600">IBAN: <span id="view-bank-iban" class="font-mono font-bold text-slate-800">GE78TB7000000123456789</span></div>
+                  <div class="text-slate-600">მიმღები: <span id="view-bank-beneficiary" class="text-slate-800">შპს „გამომცემლობა დიოგენე“</span></div>
+                </div>
+              </section>
+            </div>
+
+            <!-- 6. SIGNATURES & FOOTER -->
+            <div class="space-y-3 pt-3">
+              <!-- Dual Signatures Block -->
+              <div class="grid grid-cols-2 gap-8 text-[10px]">
+                <!-- Diogene Representative -->
+                <div class="border-t border-slate-300 pt-1.5 flex justify-between items-end">
+                  <div>
+                    <div class="font-bold text-slate-800">გამომცემლობა „დიოგენე“</div>
+                    <div id="view-signer-position" class="text-slate-500 text-[9.5px]">საგანმანათლებლო პროექტების დირექტორი</div>
+                    <div id="view-signer-name" class="font-semibold text-slate-900 mt-0.5 text-[10.5px]">თინათინ ბერიაშვილი</div>
+                  </div>
+                  <div class="text-[9px] text-slate-400 italic text-right">
+                    <span>(ხელმოწერა / ბეჭედი)</span>
+                  </div>
+                </div>
+
+                <!-- Client Acceptance -->
+                <div class="border-t border-slate-300 pt-1.5 flex justify-between items-end">
+                  <div>
+                    <div class="font-bold text-slate-800">თანხმობა / დამკვეთი</div>
+                    <div class="text-slate-500 text-[9.5px]">უფლებამოსილი წარმომადგენელი</div>
+                    <div class="font-semibold text-slate-900 mt-0.5 text-[10.5px]">____________________</div>
+                  </div>
+                  <div class="text-[9px] text-slate-400 italic text-right">
+                    <span>(თარიღი, ხელმოწერა)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Page Footer Branding -->
+              <footer class="pt-2 border-t border-slate-100 flex items-center justify-between text-[9px] text-slate-400">
+                <span id="view-footer-text">მადლობას გიხდით დაინტერესებისთვის! | გამომცემლობა „დიოგენე“ | www.diogene.ge</span>
+                <span>გვერდი 1 / 1</span>
+              </footer>
+            </div>
+
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="no-print fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span id="toast-message">მოქმედება წარმატებით შესრულდა</span>
+  </div>
+
+  <!-- Reset Confirmation Modal -->
+  <div id="reset-modal" class="no-print modal-backdrop fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 space-y-4">
+      <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+      <div class="text-center">
+        <h3 class="text-base font-bold text-slate-900">მონაცემების საწყისზე დაბრუნება?</h3>
+        <p class="text-xs text-slate-500 mt-1">ყველა მიმდინარე ცვლილება წაიშლება და აღდგება სტანდარტული შაბლონი „დიდაქტა ჰანოვერი“.</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="modal-cancel-btn" type="button" class="w-1/2 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">გაუქმება</button>
+        <button id="modal-confirm-reset-btn" type="button" class="w-1/2 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition">დიახ, დაბრუნება</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
